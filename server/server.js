@@ -7,14 +7,14 @@ const path = require('path');
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // CORS — must be before all other middleware
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? (process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(o => o.trim()) : [])
-  : ['http://localhost:5173', 'http://localhost:3000'];
+  : ['http://localhost:5173', 'http://localhost:3000','https://project-management-sys-omega.vercel.app'];
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
@@ -22,10 +22,11 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
 
-// Handle preflight for all routes
-app.options('*', cors());
+// Handle preflight for all routes first
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Reject non-JSON state-changing requests
 app.use((req, res, next) => {
