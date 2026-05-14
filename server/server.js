@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? (process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : false)
-    : ['http://localhost:5173', 'http://localhost:3000','https://project-management-sys-omega.vercel.app/api/login'],
+    : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
 app.use(express.json());
@@ -35,13 +35,8 @@ app.use('/api/projects', require('./routes/projects'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/users', require('./routes/users'));
 
-// Serve built React client in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
-  });
-}
+// Health check
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Connect to MongoDB then start server
 mongoose
