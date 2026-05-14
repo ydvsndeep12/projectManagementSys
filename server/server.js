@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? (process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : false)
-    : ['http://localhost:5173', 'http://localhost:3000','https://project-management-sys-omega.vercel.app/login'],
+    : ['http://localhost:5173', 'http://localhost:3000','https://project-management-sys-omega.vercel.app/api/login'],
   credentials: true,
 }));
 app.use(express.json());
