@@ -9,7 +9,25 @@ const app = express();
 
 app.use(helmet());
 
-// Reject non-JSON state-changing requests (CSRF mitigation for Bearer-token API)
+// CORS — must be before all other middleware
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? (process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(o => o.trim()) : [])
+  : ['http://localhost:5173', 'http://localhost:3000'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Handle preflight for all routes
+app.options('*', cors());
+
+// Reject non-JSON state-changing requests
 app.use((req, res, next) => {
   if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
     const ct = req.headers['content-type'] || '';
@@ -20,13 +38,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? (process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : false)
-    : ['http://localhost:5173', 'http://localhost:3000','https://project-management-sys-git-main-ydvsndeep12s-projects.vercel.app'],
-  credentials: true,
-}));
 app.use(express.json());
 
 // API Routes
